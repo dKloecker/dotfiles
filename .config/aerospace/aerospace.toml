@@ -21,18 +21,6 @@ default-root-container-orientation = 'auto'
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
 
 # -----------------------------------------------------------------------------
-# Workspaces
-# Directional workspaces: 'up' on ultrawide, 'left'/'right'/'down' on laptop
-# -----------------------------------------------------------------------------
-persistent-workspaces = ['up', 'left', 'right', 'down']
-
-[workspace-to-monitor-force-assignment]
-up    = 'main'
-left  = 'secondary'
-right = 'secondary'
-down  = 'main'
-
-# -----------------------------------------------------------------------------
 # Gaps
 # Spacing between windows (inner) and between windows and screen edges (outer)
 # -----------------------------------------------------------------------------
@@ -98,11 +86,21 @@ alt-right = 'workspace right'
 alt-up    = 'workspace up'
 alt-down  = 'workspace down'
 
+ctrl-shift-alt-h  = 'workspace left'
+ctrl-shift-alt-j  = 'workspace down'
+ctrl-shift-alt-k  = 'workspace up'
+ctrl-shift-alt-l  = 'workspace right'
+
 # --- Move window to workspace ---
 alt-shift-left  = 'move-node-to-workspace left'
 alt-shift-right = 'move-node-to-workspace right'
 alt-shift-up    = 'move-node-to-workspace up'
 alt-shift-down  = 'move-node-to-workspace down'
+
+ctrl-shift-alt-cmd-h = 'move-node-to-workspace left'
+ctrl-shift-alt-cmd-j = 'move-node-to-workspace down'
+ctrl-shift-alt-cmd-k = 'move-node-to-workspace up'
+ctrl-shift-alt-cmd-l = 'move-node-to-workspace right'
 
 # --- Join with (merge windows into containers) ---
 alt-ctrl-h = 'join-with left'
@@ -139,40 +137,6 @@ c         = ['close-all-windows-but-current', 'mode main']
 # Window Rules
 # Automatically apply layouts and workspace assignments when apps are detected
 # -----------------------------------------------------------------------------
-
-# --- Ultrawide (up): focused work ---
-[[on-window-detected]]
-if.app-name-regex-substring = 'pycharm'
-run = 'move-node-to-workspace up'
-
-[[on-window-detected]]
-if.app-name-regex-substring = 'webstorm'
-run = 'move-node-to-workspace up'
-
-[[on-window-detected]]
-if.app-name-regex-substring = 'safari'
-run = 'move-node-to-workspace up'
-
-# --- Laptop (left): supporting tools ---
-[[on-window-detected]]
-if.app-name-regex-substring = 'ghostty'
-run = 'move-node-to-workspace right'
-
-[[on-window-detected]]
-if.app-name-regex-substring = 'discord'
-run = 'move-node-to-workspace right'
-
-[[on-window-detected]]
-if.app-name-regex-substring = 'messages'
-run = 'move-node-to-workspace right'
-
-[[on-window-detected]]
-if.app-name-regex-substring = 'whatsapp'
-run = 'move-node-to-workspace right'
-
-[[on-window-detected]]
-if.app-name-regex-substring = 'mail'
-run = 'move-node-to-workspace right'
 
 # --- Floating: transient / utility apps ---
 [[on-window-detected]]

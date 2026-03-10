@@ -3,26 +3,61 @@ config-version = 2
 # =============================================================================
 # AEROSPACE WINDOW MANAGER CONFIGURATION
 # =============================================================================
+#
+# Two-mode design for dual-keyboard consistency:
+#
+#   MAIN MODE (default)  –  Directions use ARROW KEYS
+#     → Used with the Glove80 split keyboard (Nav layer sends arrow codes)
+#     → Also works on the laptop since arrow keys are universal
+#
+#   VIM MODE (toggle)    –  Directions use HJKL
+#     → Used with the laptop's built-in keyboard for vim-style navigation
+#     → Toggle in with Alt+Space, toggle out with Alt+Space or Esc
+#
+# Both modes share identical non-directional bindings (layout toggles,
+# resize, etc.) so everything except the direction keys behaves the same
+# regardless of which mode you're in.
+#
+# Workspaces are spatial — named L, R, U, D — and you navigate to them
+# with the same directional keys used for everything else.
+#
+# Modifier hierarchy (same in both modes):
+#   Alt + dir              →  Focus window within current workspace
+#   Alt + Shift + dir      →  Move window within current workspace
+#   Alt + Ctrl + dir       →  Jump to workspace in that direction (L/R/U/D)
+#   Alt + Ctrl + Shift + dir →  Send window to workspace in that direction
+#   Alt + Cmd + dir        →  Join / merge containers
+#
+# =============================================================================
+
 
 # -----------------------------------------------------------------------------
 # General Settings
-# Core behaviour: auto-start, window normalisation, and accordion padding
 # -----------------------------------------------------------------------------
+
+# Launch Aerospace automatically at login
 start-at-login = true
+
+# Flatten nested containers that serve no purpose (keeps the tree clean)
 enable-normalization-flatten-containers = true
+
+# Auto-flip orientation when nesting would mirror the parent's direction
 enable-normalization-opposite-orientation-for-nested-containers = true
+
+# Padding inside accordion (stacked) layout around the focused window
 accordion-padding = 30
 
-# Default layout and orientation for the root container
-default-root-container-layout = 'accordion'
+# New workspaces start as tiled with auto-detected split orientation
+default-root-container-layout = 'tiles'
 default-root-container-orientation = 'auto'
 
-# Move mouse to the centre of a newly focused monitor
+# Warp the mouse to the centre of a newly focused monitor
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
 
 # -----------------------------------------------------------------------------
 # Gaps
-# Spacing between windows (inner) and between windows and screen edges (outer)
+# Inner = between adjacent windows, Outer = between windows and screen edges
 # -----------------------------------------------------------------------------
 [gaps]
 inner.horizontal = 10
@@ -32,9 +67,9 @@ outer.right      = 10
 outer.top        = 10
 outer.bottom     = 10
 
+
 # -----------------------------------------------------------------------------
-# Exec
-# Environment variable inheritance and PATH configuration for launched apps
+# Exec – ensure Homebrew binaries are on PATH for launched processes
 # -----------------------------------------------------------------------------
 [exec]
 inherit-env-vars = true
@@ -42,103 +77,268 @@ inherit-env-vars = true
 [exec.env-vars]
 PATH = '/opt/homebrew/bin:/opt/homebrew/sbin:${PATH}'
 
+
 # -----------------------------------------------------------------------------
-# Key Mapping
-# Keyboard layout preset
+# Key Mapping – QWERTY base (matches both laptop and Glove80 base layer)
 # -----------------------------------------------------------------------------
 [key-mapping]
 preset = 'qwerty'
 
-# -----------------------------------------------------------------------------
-# Main Mode Bindings
-# Default keybindings for window management
-# -----------------------------------------------------------------------------
+
+# =============================================================================
+#  █▀▄▀█ ▄▀█ █ █▄░█   █▀▄▀█ █▀█ █▀▄ █▀▀
+#  █░▀░█ █▀█ █ █░▀█   █░▀░█ █▄█ █▄▀ ██▄
+#
+#  Default mode. Directional bindings use ARROW KEYS.
+#  Designed for the Glove80 Nav layer, but works on any keyboard.
+# =============================================================================
 [mode.main.binding]
 
-# --- Layout ---
+
+# ---------------------
+# Mode switching
+# ---------------------
+
+# Alt + Space  →  Enter vim mode (hjkl navigation for the laptop keyboard)
+alt-space = 'mode vim'
+
+# Alt + Shift + ;  →  Enter service mode (config reload, cleanup, etc.)
+alt-shift-semicolon = 'mode service'
+
+
+# ---------------------
+# Disable conflicting macOS shortcuts
+# Cmd-H hides the frontmost app; Cmd-Alt-H hides all others.
+# We disable both so they don't swallow our bindings.
+# ---------------------
+cmd-h     = []
+cmd-alt-h = []
+
+
+# ---------------------
+# Layout toggles
+# ---------------------
+
+# Toggle floating ↔ tiling for the focused window
+alt-shift-f = 'layout floating tiling'
+
+# Flip the container's split direction (horizontal ↔ vertical)
+alt-slash = 'layout horizontal vertical'
+
+# Switch between side-by-side tiles and stacked accordion
+alt-comma = 'layout tiles accordion'
+
+# Toggle fullscreen for the focused window
+alt-shift-m = 'fullscreen'
+
+
+# ---------------------
+# Focus window  (Alt + arrow)
+# Move keyboard focus to the adjacent window in that direction.
+# ---------------------
+alt-left  = 'focus left'
+alt-down  = 'focus down'
+alt-up    = 'focus up'
+alt-right = 'focus right'
+
+
+# ---------------------
+# Move window  (Alt + Shift + arrow)
+# Physically move the focused window within the tiling tree.
+# ---------------------
+alt-shift-left  = 'move left'
+alt-shift-down  = 'move down'
+alt-shift-up    = 'move up'
+alt-shift-right = 'move right'
+
+
+# ---------------------
+# Resize
+# Grow or shrink the focused window along its split axis.
+# ---------------------
+alt-minus = 'resize smart -50'
+alt-equal = 'resize smart +50'
+
+
+# ---------------------
+# Navigate to directional workspace  (Alt + Ctrl + arrow)
+# Workspaces are spatial: L (left), R (right), U (up), D (down).
+# Think of it as four virtual desktops arranged in a compass around you.
+#
+#            ┌───┐
+#            │ U │
+#        ┌───┼───┼───┐
+#        │ L │   │ R │
+#        └───┼───┼───┘
+#            │ D │
+#            └───┘
+#
+# The direction you press is the workspace you land on.
+# ---------------------
+alt-ctrl-left  = 'workspace L'
+alt-ctrl-down  = 'workspace D'
+alt-ctrl-up    = 'workspace U'
+alt-ctrl-right = 'workspace R'
+
+
+# ---------------------
+# Move window to directional workspace  (Alt + Ctrl + Shift + arrow)
+# Send the focused window to that workspace and follow it there.
+# ---------------------
+alt-ctrl-shift-left  = ['move-node-to-workspace L', 'workspace L']
+alt-ctrl-shift-down  = ['move-node-to-workspace D', 'workspace D']
+alt-ctrl-shift-up    = ['move-node-to-workspace U', 'workspace U']
+alt-ctrl-shift-right = ['move-node-to-workspace R', 'workspace R']
+
+
+# ---------------------
+# Join / merge containers  (Alt + Cmd + arrow)
+# Merge the focused window into the adjacent container.
+# Useful for building complex layouts (e.g. one tall pane + two short ones).
+# ---------------------
+alt-cmd-left  = 'join-with left'
+alt-cmd-down  = 'join-with down'
+alt-cmd-up    = 'join-with up'
+alt-cmd-right = 'join-with right'
+
+
+# ---------------------
+# Workspace back-and-forth
+# Alt-Tab toggles between the two most recent workspaces (like `cd -`).
+# Alt-Shift-Tab moves the whole workspace to the next physical monitor.
+# ---------------------
+alt-tab       = 'workspace-back-and-forth'
+alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
+
+
+# =============================================================================
+#  █░█ █ █▀▄▀█   █▀▄▀█ █▀█ █▀▄ █▀▀
+#  ▀▄▀ █ █░▀░█   █░▀░█ █▄█ █▄▀ ██▄
+#
+#  Vim mode. Directional bindings use HJKL.
+#  Toggle in from main mode with Alt+Space.
+#  Designed for the laptop's built-in keyboard.
+# =============================================================================
+[mode.vim.binding]
+
+
+# ---------------------
+# Mode switching
+# ---------------------
+
+# Alt + Space  →  Return to main mode (arrow-key navigation)
+alt-space = 'mode main'
+
+# Esc  →  Also returns to main mode (vim muscle memory: Esc exits modes)
+esc = 'mode main'
+
+# Alt + Shift + ;  →  Enter service mode (same hotkey as main mode)
+alt-shift-semicolon = 'mode service'
+
+
+# ---------------------
+# Disable conflicting macOS shortcuts (must be repeated per mode)
+# ---------------------
+cmd-h = []
+
+
+# ---------------------
+# Layout toggles  (identical to main mode)
+# ---------------------
 alt-shift-f = 'layout floating tiling'
 alt-slash   = 'layout horizontal vertical'
 alt-comma   = 'layout tiles accordion'
+alt-shift-m = 'fullscreen'
 
-# --- Focus (vim-style) ---
+
+# ---------------------
+# Focus window  (Alt + hjkl)
+# Same action as main mode but with vim direction keys.
+# ---------------------
 alt-h = 'focus left'
 alt-j = 'focus down'
 alt-k = 'focus up'
 alt-l = 'focus right'
 
-# --- Move windows (vim-style) ---
+
+# ---------------------
+# Move window  (Alt + Shift + hjkl)
+# ---------------------
 alt-shift-h = 'move left'
 alt-shift-j = 'move down'
 alt-shift-k = 'move up'
 alt-shift-l = 'move right'
 
-# --- Resize ---
+
+# ---------------------
+# Resize  (identical to main mode)
+# ---------------------
 alt-minus = 'resize smart -50'
 alt-equal = 'resize smart +50'
 
-# --- macOS overrides: disable conflicting system shortcuts ---
-cmd-h     = []
-cmd-alt-h = []
 
-# --- Workspace navigation ---
-alt-left  = 'workspace left'
-alt-right = 'workspace right'
-alt-up    = 'workspace up'
-alt-down  = 'workspace down'
+# ---------------------
+# Navigate to directional workspace  (Alt + Ctrl + hjkl)
+# Same spatial workspaces as main mode (L/R/U/D), vim keys.
+# ---------------------
+alt-ctrl-h = 'workspace L'
+alt-ctrl-j = 'workspace D'
+alt-ctrl-k = 'workspace U'
+alt-ctrl-l = 'workspace R'
 
-ctrl-shift-alt-h  = 'workspace left'
-ctrl-shift-alt-j  = 'workspace down'
-ctrl-shift-alt-k  = 'workspace up'
-ctrl-shift-alt-l  = 'workspace right'
 
-# --- Move window to workspace ---
-alt-shift-left  = 'move-node-to-workspace left'
-alt-shift-right = 'move-node-to-workspace right'
-alt-shift-up    = 'move-node-to-workspace up'
-alt-shift-down  = 'move-node-to-workspace down'
+# ---------------------
+# Move window to directional workspace  (Alt + Ctrl + Shift + hjkl)
+# ---------------------
+alt-ctrl-shift-h = ['move-node-to-workspace L', 'workspace L']
+alt-ctrl-shift-j = ['move-node-to-workspace D', 'workspace D']
+alt-ctrl-shift-k = ['move-node-to-workspace U', 'workspace U']
+alt-ctrl-shift-l = ['move-node-to-workspace R', 'workspace R']
 
-ctrl-shift-alt-cmd-h = 'move-node-to-workspace left'
-ctrl-shift-alt-cmd-j = 'move-node-to-workspace down'
-ctrl-shift-alt-cmd-k = 'move-node-to-workspace up'
-ctrl-shift-alt-cmd-l = 'move-node-to-workspace right'
 
-# --- Join with (merge windows into containers) ---
-alt-ctrl-h = 'join-with left'
-alt-ctrl-j = 'join-with down'
-alt-ctrl-k = 'join-with up'
-alt-ctrl-l = 'join-with right'
+# ---------------------
+# Join / merge containers  (Alt + Cmd + hjkl)
+# No conflict here because we don't need cmd-alt-h = [] in vim mode;
+# the binding itself overrides the macOS shortcut.
+# ---------------------
+alt-cmd-h = 'join-with left'
+alt-cmd-j = 'join-with down'
+alt-cmd-k = 'join-with up'
+alt-cmd-l = 'join-with right'
 
-# --- Workspace switching ---
+
+# ---------------------
+# Workspace back-and-forth  (identical to main mode)
+# ---------------------
 alt-tab       = 'workspace-back-and-forth'
 alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
 
-# --- Enter service mode ---
-cmd-alt-shift-enter = 'mode service'
 
-# -----------------------------------------------------------------------------
-# Service Mode Bindings
-# Secondary mode for config management and app launching
-# -----------------------------------------------------------------------------
+# =============================================================================
+#  SERVICE MODE  –  Config management and maintenance
+#  Enter from either main or vim mode with Alt+Shift+;
+# =============================================================================
 [mode.service.binding]
 
-# --- Exit service mode ---
+# Return to main mode (not vim — service mode is rare, defaulting to main
+# is the safest landing spot)
 esc   = ['mode main']
 enter = ['mode main']
 
-# --- Config management ---
-r         = ['reload-config', 'mode main']
+# Reload the Aerospace config from disk
+r = ['reload-config', 'mode main']
+
+# Flatten the workspace tree (remove empty intermediate containers)
 backspace = ['flatten-workspace-tree', 'mode main']
-c         = ['close-all-windows-but-current', 'mode main']
 
-# --- App launchers ---
-# alt-c = 'exec-and-forget open -a "Claude"'
+# Close every window on the workspace except the focused one
+c = ['close-all-windows-but-current', 'mode main']
 
-# -----------------------------------------------------------------------------
-# Window Rules
-# Automatically apply layouts and workspace assignments when apps are detected
-# -----------------------------------------------------------------------------
 
-# --- Floating: transient / utility apps ---
+# =============================================================================
+# WINDOW RULES
+# Automatically float apps that don't tile well
+# =============================================================================
 [[on-window-detected]]
 if.app-name-regex-substring = 'finder'
 run = 'layout floating'
@@ -147,7 +347,14 @@ run = 'layout floating'
 if.app-name-regex-substring = 'activity monitor'
 run = 'layout floating'
 
-# Uncomment to also float Mail
-# [[on-window-detected]]
-# if.app-name-regex-substring = 'mail'
-# run = 'layout floating'
+[[on-window-detected]]
+if.app-name-regex-substring = 'system preferences'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'system settings'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'calculator'
+run = 'layout floating'

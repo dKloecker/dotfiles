@@ -7,7 +7,7 @@ config-version = 2
 # Two-mode design for dual-keyboard consistency:
 #
 #   MAIN MODE (default)  –  Directions use ARROW KEYS
-#     → Used with the Glove80 split keyboard (Nav layer sends arrow codes)
+#     → Used with split keyboard (Nav layer arrow codes)
 #     → Also works on the laptop since arrow keys are universal
 #
 #   VIM MODE (toggle)    –  Directions use HJKL
@@ -17,16 +17,6 @@ config-version = 2
 # Both modes share identical non-directional bindings (layout toggles,
 # resize, etc.) so everything except the direction keys behaves the same
 # regardless of which mode you're in.
-#
-# Workspaces are spatial — named L, R, U, D — and you navigate to them
-# with the same directional keys used for everything else.
-#
-# Modifier hierarchy (same in both modes):
-#   Alt + dir              →  Focus window within current workspace
-#   Alt + Shift + dir      →  Move window within current workspace
-#   Alt + Ctrl + dir       →  Jump to workspace in that direction (L/R/U/D)
-#   Alt + Ctrl + Shift + dir →  Send window to workspace in that direction
-#   Alt + Cmd + dir        →  Join / merge containers
 #
 # =============================================================================
 
@@ -175,20 +165,20 @@ alt-equal = 'resize smart +50'
 #
 # The direction you press is the workspace you land on.
 # ---------------------
-alt-ctrl-left  = 'workspace L'
-alt-ctrl-down  = 'workspace D'
-alt-ctrl-up    = 'workspace U'
-alt-ctrl-right = 'workspace R'
+alt-cmd-left  = 'workspace L'
+alt-cmd-down  = 'workspace D'
+alt-cmd-up    = 'workspace U'
+alt-cmd-right = 'workspace R'
 
 
 # ---------------------
 # Move window to directional workspace  (Alt + Ctrl + Shift + arrow)
 # Send the focused window to that workspace and follow it there.
 # ---------------------
-alt-ctrl-shift-left  = ['move-node-to-workspace L', 'workspace L']
-alt-ctrl-shift-down  = ['move-node-to-workspace D', 'workspace D']
-alt-ctrl-shift-up    = ['move-node-to-workspace U', 'workspace U']
-alt-ctrl-shift-right = ['move-node-to-workspace R', 'workspace R']
+alt-ctrl-shift-cmd-left  = ['move-node-to-workspace L', 'workspace L']
+alt-ctrl-shift-cmd-down  = ['move-node-to-workspace D', 'workspace D']
+alt-ctrl-shift-cmd-up    = ['move-node-to-workspace U', 'workspace U']
+alt-ctrl-shift-cmd-right = ['move-node-to-workspace R', 'workspace R']
 
 
 # ---------------------
@@ -196,10 +186,10 @@ alt-ctrl-shift-right = ['move-node-to-workspace R', 'workspace R']
 # Merge the focused window into the adjacent container.
 # Useful for building complex layouts (e.g. one tall pane + two short ones).
 # ---------------------
-alt-cmd-left  = 'join-with left'
-alt-cmd-down  = 'join-with down'
-alt-cmd-up    = 'join-with up'
-alt-cmd-right = 'join-with right'
+alt-ctrl-left  = 'join-with left'
+alt-ctrl-down  = 'join-with down'
+alt-ctrl-up    = 'join-with up'
+alt-ctrl-right = 'join-with right'
 
 
 # ---------------------
@@ -281,19 +271,19 @@ alt-equal = 'resize smart +50'
 # Navigate to directional workspace  (Alt + Ctrl + hjkl)
 # Same spatial workspaces as main mode (L/R/U/D), vim keys.
 # ---------------------
-alt-ctrl-h = 'workspace L'
-alt-ctrl-j = 'workspace D'
-alt-ctrl-k = 'workspace U'
-alt-ctrl-l = 'workspace R'
+alt-cmd-h = 'workspace L'
+alt-cmd-j = 'workspace D'
+alt-cmd-k = 'workspace U'
+alt-cmd-l = 'workspace R'
 
 
 # ---------------------
 # Move window to directional workspace  (Alt + Ctrl + Shift + hjkl)
 # ---------------------
-alt-ctrl-shift-h = ['move-node-to-workspace L', 'workspace L']
-alt-ctrl-shift-j = ['move-node-to-workspace D', 'workspace D']
-alt-ctrl-shift-k = ['move-node-to-workspace U', 'workspace U']
-alt-ctrl-shift-l = ['move-node-to-workspace R', 'workspace R']
+alt-ctrl-shift-cmd-h = ['move-node-to-workspace L', 'workspace L']
+alt-ctrl-shift-cmd-j = ['move-node-to-workspace D', 'workspace D']
+alt-ctrl-shift-cmd-k = ['move-node-to-workspace U', 'workspace U']
+alt-ctrl-shift-cmd-l = ['move-node-to-workspace R', 'workspace R']
 
 
 # ---------------------
@@ -301,10 +291,10 @@ alt-ctrl-shift-l = ['move-node-to-workspace R', 'workspace R']
 # No conflict here because we don't need cmd-alt-h = [] in vim mode;
 # the binding itself overrides the macOS shortcut.
 # ---------------------
-alt-cmd-h = 'join-with left'
-alt-cmd-j = 'join-with down'
-alt-cmd-k = 'join-with up'
-alt-cmd-l = 'join-with right'
+alt-ctrl-h = 'join-with left'
+alt-ctrl-j = 'join-with down'
+alt-ctrl-k = 'join-with up'
+alt-ctrl-l = 'join-with right'
 
 
 # ---------------------

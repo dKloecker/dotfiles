@@ -4,19 +4,54 @@ config-version = 2
 # AEROSPACE WINDOW MANAGER CONFIGURATION
 # =============================================================================
 #
-# Two-mode design for dual-keyboard consistency:
+# Two modes, one mental model:
 #
-#   MAIN MODE (default)  –  Directions use ARROW KEYS
-#     → Used with split keyboard (Nav layer arrow codes)
-#     → Also works on the laptop since arrow keys are universal
+#   MAIN MODE  (Glove80 nav layer / any keyboard with arrows)
+#     Directions: ARROW KEYS
+#     Designed to coexist with macOS word-nav (alt + arrow), so window
+#     ops live one modifier deeper than they used to.
 #
-#   VIM MODE (toggle)    –  Directions use HJKL
-#     → Used with the laptop's built-in keyboard for vim-style navigation
-#     → Toggle in with Alt+Space, toggle out with Alt+Space or Esc
+#   VIM MODE  (laptop, hjkl)
+#     Directions: H J K L
+#     Lives behind a mode toggle, so it's free to use lighter modifiers —
+#     alt+arrow word-nav isn't a concern when 'h' is the direction key.
+#     Toggle in with Alt+Space, toggle out with Alt+Space or Esc.
 #
-# Both modes share identical non-directional bindings (layout toggles,
-# resize, etc.) so everything except the direction keys behaves the same
-# regardless of which mode you're in.
+# -----------------------------------------------------------------------------
+# Modifier philosophy
+# -----------------------------------------------------------------------------
+#
+#   cmd   →  WORKSPACE-level     (jumping rooms)
+#   ctrl  →  WINDOW-level        (focus / move within a room)
+#   shift →  "…and bring the window with me"
+#   alt   →  "this is an AeroSpace command, not a regular keypress"
+#
+# So every binding reads like a sentence:
+#
+#   alt + cmd        + arrow  →  go to that workspace
+#   alt + cmd + shift + arrow →  go to that workspace AND bring this window
+#   alt + ctrl       + arrow  →  focus the window in that direction
+#   alt + ctrl + shift + arrow →  move this window in that direction
+#   alt + ctrl + cmd  + arrow →  merge with the window in that direction
+#
+# Vim mode follows the same logic but drops one modifier where it can,
+# because being in a mode already disambiguates "this is a WM command":
+#
+#   alt              + hjkl   →  focus
+#   alt + shift      + hjkl   →  move
+#   alt + cmd        + hjkl   →  workspace
+#   alt + cmd + shift + hjkl  →  send window to workspace
+#   alt + ctrl       + hjkl   →  merge
+#
+# Workspaces are spatial — L, R, U, D — arranged like a compass:
+#
+#                     ┌───┐
+#                     │ U │
+#                 ┌───┼───┼───┐
+#                 │ L │   │ R │
+#                 └───┼───┼───┘
+#                     │ D │
+#                     └───┘
 #
 # =============================================================================
 
@@ -25,29 +60,21 @@ config-version = 2
 # General Settings
 # -----------------------------------------------------------------------------
 
-# Launch Aerospace automatically at login
 start-at-login = true
 
-# Flatten nested containers that serve no purpose (keeps the tree clean)
 enable-normalization-flatten-containers = true
-
-# Auto-flip orientation when nesting would mirror the parent's direction
 enable-normalization-opposite-orientation-for-nested-containers = true
 
-# Padding inside accordion (stacked) layout around the focused window
 accordion-padding = 30
 
-# New workspaces start as tiled with auto-detected split orientation
 default-root-container-layout = 'tiles'
 default-root-container-orientation = 'auto'
 
-# Warp the mouse to the centre of a newly focused monitor
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
 
 
 # -----------------------------------------------------------------------------
 # Gaps
-# Inner = between adjacent windows, Outer = between windows and screen edges
 # -----------------------------------------------------------------------------
 [gaps]
 inner.horizontal = 10
@@ -59,7 +86,7 @@ outer.bottom     = 10
 
 
 # -----------------------------------------------------------------------------
-# Exec – ensure Homebrew binaries are on PATH for launched processes
+# Exec environment
 # -----------------------------------------------------------------------------
 [exec]
 inherit-env-vars = true
@@ -69,7 +96,7 @@ PATH = '/opt/homebrew/bin:/opt/homebrew/sbin:${PATH}'
 
 
 # -----------------------------------------------------------------------------
-# Key Mapping – QWERTY base (matches both laptop and Glove80 base layer)
+# Key Mapping
 # -----------------------------------------------------------------------------
 [key-mapping]
 preset = 'qwerty'
@@ -79,8 +106,10 @@ preset = 'qwerty'
 #  █▀▄▀█ ▄▀█ █ █▄░█   █▀▄▀█ █▀█ █▀▄ █▀▀
 #  █░▀░█ █▀█ █ █░▀█   █░▀░█ █▄█ █▄▀ ██▄
 #
-#  Default mode. Directional bindings use ARROW KEYS.
-#  Designed for the Glove80 Nav layer, but works on any keyboard.
+#  Default mode. Arrow-key directions.
+#  Crucially: alt+arrow and alt+shift+arrow are LEFT FREE for macOS
+#  word navigation and word selection. AeroSpace bindings start at
+#  alt+ctrl+arrow and alt+cmd+arrow.
 # =============================================================================
 [mode.main.binding]
 
@@ -89,17 +118,15 @@ preset = 'qwerty'
 # Mode switching
 # ---------------------
 
-# Alt + Space  →  Enter vim mode (hjkl navigation for the laptop keyboard)
+# Enter vim mode (hjkl)
 alt-space = 'mode vim'
 
-# Alt + Shift + ;  →  Enter service mode (config reload, cleanup, etc.)
+# Enter service mode (config reload, layout reset, etc.)
 alt-shift-semicolon = 'mode service'
 
 
 # ---------------------
 # Disable conflicting macOS shortcuts
-# Cmd-H hides the frontmost app; Cmd-Alt-H hides all others.
-# We disable both so they don't swallow our bindings.
 # ---------------------
 cmd-h     = []
 cmd-alt-h = []
@@ -108,62 +135,39 @@ cmd-alt-h = []
 # ---------------------
 # Layout toggles
 # ---------------------
-
-# Toggle floating ↔ tiling for the focused window
-alt-shift-f = 'layout floating tiling'
-
-# Flip the container's split direction (horizontal ↔ vertical)
-alt-slash = 'layout horizontal vertical'
-
-# Switch between side-by-side tiles and stacked accordion
-alt-comma = 'layout tiles accordion'
-
-# Toggle fullscreen for the focused window
-alt-shift-m = 'fullscreen'
-
-
-# ---------------------
-# Focus window  (Alt + arrow)
-# Move keyboard focus to the adjacent window in that direction.
-# ---------------------
-alt-left  = 'focus left'
-alt-down  = 'focus down'
-alt-up    = 'focus up'
-alt-right = 'focus right'
-
-
-# ---------------------
-# Move window  (Alt + Shift + arrow)
-# Physically move the focused window within the tiling tree.
-# ---------------------
-alt-shift-left  = 'move left'
-alt-shift-down  = 'move down'
-alt-shift-up    = 'move up'
-alt-shift-right = 'move right'
+alt-shift-f = 'layout floating tiling'    # float ↔ tile the focused window
+alt-slash   = 'layout horizontal vertical' # flip split direction
+alt-comma   = 'layout tiles accordion'     # tiles ↔ accordion
+alt-shift-m = 'fullscreen'                 # toggle fullscreen
 
 
 # ---------------------
 # Resize
-# Grow or shrink the focused window along its split axis.
 # ---------------------
 alt-minus = 'resize smart -50'
 alt-equal = 'resize smart +50'
 
 
 # ---------------------
-# Navigate to directional workspace  (Alt + Ctrl + arrow)
-# Workspaces are spatial: L (left), R (right), U (up), D (down).
-# Think of it as four virtual desktops arranged in a compass around you.
-#
-#            ┌───┐
-#            │ U │
-#        ┌───┼───┼───┐
-#        │ L │   │ R │
-#        └───┼───┼───┘
-#            │ D │
-#            └───┘
-#
-# The direction you press is the workspace you land on.
+# Focus window  (alt + ctrl + arrow)
+# ---------------------
+alt-ctrl-left  = 'focus left'
+alt-ctrl-down  = 'focus down'
+alt-ctrl-up    = 'focus up'
+alt-ctrl-right = 'focus right'
+
+
+# ---------------------
+# Move window within workspace  (alt + ctrl + shift + arrow)
+# ---------------------
+alt-ctrl-shift-left  = 'move left'
+alt-ctrl-shift-down  = 'move down'
+alt-ctrl-shift-up    = 'move up'
+alt-ctrl-shift-right = 'move right'
+
+
+# ---------------------
+# Jump to directional workspace  (alt + cmd + arrow)
 # ---------------------
 alt-cmd-left  = 'workspace L'
 alt-cmd-down  = 'workspace D'
@@ -172,42 +176,44 @@ alt-cmd-right = 'workspace R'
 
 
 # ---------------------
-# Move window to directional workspace  (Alt + Ctrl + Shift + arrow)
-# Send the focused window to that workspace and follow it there.
+# Send window to directional workspace and follow  (alt + cmd + shift + arrow)
 # ---------------------
-alt-ctrl-shift-cmd-left  = ['move-node-to-workspace L', 'workspace L']
-alt-ctrl-shift-cmd-down  = ['move-node-to-workspace D', 'workspace D']
-alt-ctrl-shift-cmd-up    = ['move-node-to-workspace U', 'workspace U']
-alt-ctrl-shift-cmd-right = ['move-node-to-workspace R', 'workspace R']
+alt-cmd-shift-left  = ['move-node-to-workspace L', 'workspace L']
+alt-cmd-shift-down  = ['move-node-to-workspace D', 'workspace D']
+alt-cmd-shift-up    = ['move-node-to-workspace U', 'workspace U']
+alt-cmd-shift-right = ['move-node-to-workspace R', 'workspace R']
 
 
 # ---------------------
-# Join / merge containers  (Alt + Cmd + arrow)
-# Merge the focused window into the adjacent container.
-# Useful for building complex layouts (e.g. one tall pane + two short ones).
+# Join / merge with neighbour  (alt + ctrl + cmd + arrow)
+# Less frequent op, lives on the busier three-modifier combo.
 # ---------------------
-alt-ctrl-left  = 'join-with left'
-alt-ctrl-down  = 'join-with down'
-alt-ctrl-up    = 'join-with up'
-alt-ctrl-right = 'join-with right'
+alt-ctrl-cmd-left  = 'join-with left'
+alt-ctrl-cmd-down  = 'join-with down'
+alt-ctrl-cmd-up    = 'join-with up'
+alt-ctrl-cmd-right = 'join-with right'
 
 
 # ---------------------
-# Workspace back-and-forth
-# Alt-Tab toggles between the two most recent workspaces (like `cd -`).
-# Alt-Shift-Tab moves the whole workspace to the next physical monitor.
+# Workspace utilities
 # ---------------------
-alt-tab       = 'workspace-back-and-forth'
-alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
+alt-ctrl-tab = 'workspace-back-and-forth'
+alt-ctrl-shift-tab      = 'move-workspace-to-monitor --wrap-around next'
 
 
 # =============================================================================
 #  █░█ █ █▀▄▀█   █▀▄▀█ █▀█ █▀▄ █▀▀
 #  ▀▄▀ █ █░▀░█   █░▀░█ █▄█ █▄▀ ██▄
 #
-#  Vim mode. Directional bindings use HJKL.
-#  Toggle in from main mode with Alt+Space.
-#  Designed for the laptop's built-in keyboard.
+#  Vim mode. HJKL directions. Lighter modifiers — being in the mode is
+#  itself a disambiguator, so we don't need 'alt+ctrl' just to mean
+#  "this is a window command."
+#
+#  The relationship to main mode:
+#     main  alt+ctrl + arrow    ≡   vim  alt + hjkl       (focus)
+#     main  alt+ctrl+shift+arrow ≡   vim  alt+shift + hjkl (move)
+#     main  alt+cmd + arrow      ≡   vim  alt+cmd + hjkl   (workspace)
+#     ...etc. Same actions, lighter chord.
 # =============================================================================
 [mode.vim.binding]
 
@@ -215,19 +221,13 @@ alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
 # ---------------------
 # Mode switching
 # ---------------------
-
-# Alt + Space  →  Return to main mode (arrow-key navigation)
-alt-space = 'mode main'
-
-# Esc  →  Also returns to main mode (vim muscle memory: Esc exits modes)
-esc = 'mode main'
-
-# Alt + Shift + ;  →  Enter service mode (same hotkey as main mode)
+alt-space           = 'mode main'   # exit vim mode
+esc                 = 'mode main'   # also exits (vim muscle memory)
 alt-shift-semicolon = 'mode service'
 
 
 # ---------------------
-# Disable conflicting macOS shortcuts (must be repeated per mode)
+# Disable conflicting macOS shortcuts
 # ---------------------
 cmd-h = []
 
@@ -242,8 +242,14 @@ alt-shift-m = 'fullscreen'
 
 
 # ---------------------
-# Focus window  (Alt + hjkl)
-# Same action as main mode but with vim direction keys.
+# Resize  (identical to main mode)
+# ---------------------
+alt-minus = 'resize smart -50'
+alt-equal = 'resize smart +50'
+
+
+# ---------------------
+# Focus window  (alt + hjkl)
 # ---------------------
 alt-h = 'focus left'
 alt-j = 'focus down'
@@ -252,7 +258,7 @@ alt-l = 'focus right'
 
 
 # ---------------------
-# Move window  (Alt + Shift + hjkl)
+# Move window within workspace  (alt + shift + hjkl)
 # ---------------------
 alt-shift-h = 'move left'
 alt-shift-j = 'move down'
@@ -261,15 +267,7 @@ alt-shift-l = 'move right'
 
 
 # ---------------------
-# Resize  (identical to main mode)
-# ---------------------
-alt-minus = 'resize smart -50'
-alt-equal = 'resize smart +50'
-
-
-# ---------------------
-# Navigate to directional workspace  (Alt + Ctrl + hjkl)
-# Same spatial workspaces as main mode (L/R/U/D), vim keys.
+# Jump to directional workspace  (alt + cmd + hjkl)
 # ---------------------
 alt-cmd-h = 'workspace L'
 alt-cmd-j = 'workspace D'
@@ -278,18 +276,19 @@ alt-cmd-l = 'workspace R'
 
 
 # ---------------------
-# Move window to directional workspace  (Alt + Ctrl + Shift + hjkl)
+# Send window to directional workspace and follow  (alt + cmd + shift + hjkl)
+# Mirrors the main-mode 'shift = bring the window' rule.
+# Note: this is much friendlier than the old 4-modifier combo.
 # ---------------------
-alt-ctrl-shift-cmd-h = ['move-node-to-workspace L', 'workspace L']
-alt-ctrl-shift-cmd-j = ['move-node-to-workspace D', 'workspace D']
-alt-ctrl-shift-cmd-k = ['move-node-to-workspace U', 'workspace U']
-alt-ctrl-shift-cmd-l = ['move-node-to-workspace R', 'workspace R']
+alt-cmd-shift-h = ['move-node-to-workspace L', 'workspace L']
+alt-cmd-shift-j = ['move-node-to-workspace D', 'workspace D']
+alt-cmd-shift-k = ['move-node-to-workspace U', 'workspace U']
+alt-cmd-shift-l = ['move-node-to-workspace R', 'workspace R']
 
 
 # ---------------------
-# Join / merge containers  (Alt + Cmd + hjkl)
-# No conflict here because we don't need cmd-alt-h = [] in vim mode;
-# the binding itself overrides the macOS shortcut.
+# Join / merge with neighbour  (alt + ctrl + hjkl)
+# In vim mode 'alt + hjkl' is focus, so merge gets the next combo up.
 # ---------------------
 alt-ctrl-h = 'join-with left'
 alt-ctrl-j = 'join-with down'
@@ -298,36 +297,28 @@ alt-ctrl-l = 'join-with right'
 
 
 # ---------------------
-# Workspace back-and-forth  (identical to main mode)
+# Workspace utilities  (identical to main mode)
 # ---------------------
 alt-tab       = 'workspace-back-and-forth'
 alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
 
 
 # =============================================================================
-#  SERVICE MODE  –  Config management and maintenance
-#  Enter from either main or vim mode with Alt+Shift+;
+#  SERVICE MODE  –  Maintenance commands
+#  Enter from either main or vim mode with Alt + Shift + ;
 # =============================================================================
 [mode.service.binding]
 
-# Return to main mode (not vim — service mode is rare, defaulting to main
-# is the safest landing spot)
 esc   = ['mode main']
 enter = ['mode main']
 
-# Reload the Aerospace config from disk
-r = ['reload-config', 'mode main']
-
-# Flatten the workspace tree (remove empty intermediate containers)
+r         = ['reload-config', 'mode main']
 backspace = ['flatten-workspace-tree', 'mode main']
-
-# Close every window on the workspace except the focused one
-c = ['close-all-windows-but-current', 'mode main']
+c         = ['close-all-windows-but-current', 'mode main']
 
 
 # =============================================================================
-# WINDOW RULES
-# Automatically float apps that don't tile well
+# WINDOW RULES  –  apps that should always float
 # =============================================================================
 [[on-window-detected]]
 if.app-name-regex-substring = 'finder'
